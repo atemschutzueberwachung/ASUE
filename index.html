@@ -994,7 +994,7 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
 
     app.innerHTML = `
       <header class="top">
-        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.1.1</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
+        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.1.2</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
         <div style="display:flex; gap:8px;">
           <button class="btn small" id="btn-role">${esc(roleLabel())}</button><button class="btn small" id="btn-history">Gespeicherte Einsätze</button><button class="btn small" id="btn-einsatz-qr">QR-Code</button>
           <button class="btn small" id="btn-nachweis">Nachweis / Export</button>
@@ -1537,7 +1537,7 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
         werte.push({name:'Trupp (niedrigster Druck)', druck});
       }
 
-      // ASUE v1.1.1 - reale Druckprüfung
+      // ASUE v1.1.2 - reale Druckprüfung
       const letzterDruck = lastDruckLine(t);
       let vorher = null;
       if(letzterDruck && letzterDruck.werte && letzterDruck.werte.length){
@@ -2163,7 +2163,7 @@ const ASUE_V102_FEATURES = {
 
 <!-- ASUE_V103_FEATURES -->
 <script>
-const APP_VERSION = "1.1.1";
+const APP_VERSION = "1.1.2";
 
 const ASUE_V103 = {
   roleKey: "atemschutz:rolle",
@@ -2251,6 +2251,7 @@ function asueV110LicenseCard(){
 
  const code = l.code || l.lizenz_code || "-";
  const device = l.geraete_name || l.device_name || l.geraetename || "-";
+  const deviceId = l.geraete_id || l.device_id || l.geraeteID || "-";
 
  return `
  <div class="asue-license-card">
@@ -2281,6 +2282,7 @@ function renderV111License(){
   const code = l.code || l.lizenz_code || "-";
   const fw = l.feuerwehr || "-";
   const device = l.geraete_name || l.device_name || l.geraetename || "-";
+  const deviceId = l.geraete_id || l.device_id || l.geraeteID || "-";
   const date = l.gueltig_bis || "-";
 
   const old = document.getElementById("ASUE_V111_VISIBLE_LICENSE");
@@ -2294,7 +2296,8 @@ function renderV111License(){
     fw + "<br>" +
     "<b>" + code + "</b><br>" +
     "🟢 Aktiv · gültig bis " + date + "<br>" +
-    "Gerät: " + device;
+    "Gerät: <b>" + device + "</b><br>" +
+    "Geräte-ID: " + deviceId;
   document.body.appendChild(div);
 }
 
