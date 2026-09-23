@@ -979,7 +979,7 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
 
     app.innerHTML = `
       <header class="top">
-        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.0.1</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
+        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.0.2</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
         <div style="display:flex; gap:8px;">
           <button class="btn small" id="btn-role">${esc(roleLabel())}</button><button class="btn small" id="btn-history">Gespeicherte Einsätze</button><button class="btn small" id="btn-einsatz-qr">QR-Code</button>
           <button class="btn small" id="btn-nachweis">Nachweis / Export</button>
@@ -2094,23 +2094,29 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 }
 </script>
 
-<!-- ASUE_V2_FEATURES -->
+<!-- ASUE_V102_FEATURES -->
 <script>
-const ASUE_V2_FEATURES = {
+const ASUE_V102_FEATURES = {
+  roleKey: 'atemschutz:rolle',
+
   getRole(){
-    return localStorage.getItem('asue:rolle') || '';
+    return localStorage.getItem(this.roleKey) || '';
   },
-  setRole(r){
-    localStorage.setItem('asue:rolle', r);
+
+  setRole(role){
+    localStorage.setItem(this.roleKey, role);
   },
-  checkPressure(previous, current){
-    previous = Number(previous);
-    current = Number(current);
-    if(previous && current > previous){
+
+  pressureWarning(oldValue, newValue){
+    const oldP = Number(oldValue);
+    const newP = Number(newValue);
+
+    if(oldP && newP > oldP){
       return confirm(
-        '⚠️ Achtung\n\n' +
-        'Der eingegebene Druck ('+current+' bar) ist höher als der vorherige Wert ('+previous+' bar).\n\n' +
-        'Bitte prüfen. Trotzdem übernehmen?'
+        '⚠️ Ungewöhnlicher Druckwert\n\n' +
+        'Vorher: ' + oldP + ' bar\n' +
+        'Neu: ' + newP + ' bar\n\n' +
+        'Bitte prüfen.\n\nTrotzdem übernehmen?'
       );
     }
     return true;
