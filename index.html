@@ -979,7 +979,7 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
 
     app.innerHTML = `
       <header class="top">
-        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.0.2</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
+        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.0.3</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
         <div style="display:flex; gap:8px;">
           <button class="btn small" id="btn-role">${esc(roleLabel())}</button><button class="btn small" id="btn-history">Gespeicherte Einsätze</button><button class="btn small" id="btn-einsatz-qr">QR-Code</button>
           <button class="btn small" id="btn-nachweis">Nachweis / Export</button>
@@ -2119,6 +2119,40 @@ const ASUE_V102_FEATURES = {
         'Bitte prüfen.\n\nTrotzdem übernehmen?'
       );
     }
+    return true;
+  }
+};
+</script>
+
+
+<!-- ASUE_V103_FEATURES -->
+<script>
+const APP_VERSION = "1.0.3";
+
+const ASUE_V103 = {
+  roleKey: "atemschutz:rolle",
+
+  getRole(){
+    return localStorage.getItem(this.roleKey) || "";
+  },
+
+  setRole(role){
+    localStorage.setItem(this.roleKey, role);
+  },
+
+  checkPressure(previous, current){
+    const oldValue = Number(previous);
+    const newValue = Number(current);
+
+    if(oldValue && newValue > oldValue){
+      return confirm(
+        "⚠️ Ungewöhnlicher Druckwert\n\n" +
+        "Letzter Druck: " + oldValue + " bar\n" +
+        "Neuer Druck: " + newValue + " bar\n\n" +
+        "Bitte prüfen.\n\nTrotzdem übernehmen?"
+      );
+    }
+
     return true;
   }
 };
