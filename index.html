@@ -174,6 +174,64 @@
 (function(){
 
   const STORE_KEY = 'atemschutz:einsatz';
+
+  const LICENSE_KEY = 'asue:lizenz';
+  const LICENSE_SERVER = 'https://license.rabenhorstacht.de/api';
+
+  function getLicense(){
+    try { return JSON.parse(localStorage.getItem(LICENSE_KEY) || 'null'); }
+    catch(e){ return null; }
+  }
+
+  function saveLicense(data){
+    localStorage.setItem(LICENSE_KEY, JSON.stringify(data));
+  }
+
+  async function checkLicense(){
+    const lic=getLicense();
+    if(!lic) return false;
+    try{
+      const r=await fetch(LICENSE_SERVER+'/validieren',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({geraete_id:lic.geraete_id})
+      });
+      const d=await r.json();
+      return d.ok===true;
+    }catch(e){
+      return true; // Offlinebetrieb
+    }
+  }
+
+  function renderLicenseSetup(){
+    app.innerHTML=`
+    <div class="setup-card">
+      <h2>Lizenz aktivieren</h2>
+      <div class="field"><label>Lizenzcode</label><input id="lic-code" placeholder="ASUE-XXXX-XXXX"></div>
+      <div class="field"><label>Gerätename</label><input id="lic-name" placeholder="Tablet ELW"></div>
+      <button class="btn primary" id="lic-btn" style="width:100%">Aktivieren</button>
+      <div id="lic-msg" style="margin-top:12px"></div>
+    </div>`;
+    document.getElementById('lic-btn').onclick=async()=>{
+      const msg=document.getElementById('lic-msg');
+      try{
+        const r=await fetch(LICENSE_SERVER+'/aktivieren',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            code:document.getElementById('lic-code').value,
+            geraete_name:document.getElementById('lic-name').value
+          })
+        });
+        const d=await r.json();
+        if(d.ok){
+          saveLicense(d);
+          render();
+        }else msg.textContent=d.error||'Fehler';
+      }catch(e){msg.textContent='Lizenzserver nicht erreichbar';}
+    };
+  }
+
+
   const HISTORY_KEY = 'atemschutz:einsaetze';
   const PDF_HISTORY_KEY = 'atemschutz:pdf:';
   const ROLE_KEY = 'atemschutz:rolle';
@@ -690,10 +748,12 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
 
   const app = document.getElementById('app');
 
-  function render(){
+  async function render(){
     if(!authReady){ return; }
     if(!currentSession){ renderRolePicker(); return; }
     if(!getRole()){ renderRolePicker(); return; }
+    if(!getLicense()){ renderLicenseSetup(); return; }
+    if(!(await checkLicense())){ renderLicenseSetup(); return; }
     if(!state){ renderSetup(); return; }
     renderDashboard();
   }
@@ -1363,26 +1423,6 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
   }
 
   // ---------- Druck erfassen: normal / bei Ziel erreicht / bei Rückzug / Einsatzende ----------
-  async function confirmPressureIncrease(t, werte){
-    const previous = lastDruckLine(t);
-    if(!previous || !Array.isArray(previous.werte) || !Array.isArray(werte) || !werte.length) return true;
-    const warnings = [];
-    werte.forEach(w=>{
-      const prev = previous.werte.find(p=>p.name===w.name);
-      if(prev && Number.isFinite(Number(prev.druck)) && Number.isFinite(Number(w.druck)) && Number(w.druck) > Number(prev.druck)){
-        warnings.push(`${w.name}: ${w.druck} bar (vorher ${prev.druck} bar)`);
-      }
-    });
-    // Bei normalen Truppmessungen lautet der Name bewusst immer gleich.
-    // Bei Abschlussdruck wird pro Mitglied verglichen.
-    if(!warnings.length) return true;
-    const text = `⚠️ Achtung – Druckangabe prüfen\n\n` +
-      `Der eingegebene Druck ist höher als die vorherige Messung:\n\n` +
-      warnings.join('\n') +
-      `\n\nEin Druckanstieg ist ungewöhnlich.\n\nDruck trotzdem übernehmen?`;
-    return window.confirm(text);
-  }
-
   function openDruckModal(id, context, onDone){
     context = context || 'normal';
     const t = state.trupps.find(x=>x.id===id); if(!t) return;
@@ -1481,8 +1521,6 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
         }
         werte.push({name:'Trupp (niedrigster Druck)', druck});
       }
-
-      if(!(await confirmPressureIncrease(t, werte))) return;
 
       t.druckwerte.push({zeit: Date.now(), werte, kontext: context});
       t.lastDruckCheck = Date.now();
