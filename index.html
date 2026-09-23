@@ -2093,5 +2093,30 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   });
 }
 </script>
+
+<!-- ASUE_V2_FEATURES -->
+<script>
+const ASUE_V2_FEATURES = {
+  getRole(){
+    return localStorage.getItem('asue:rolle') || '';
+  },
+  setRole(r){
+    localStorage.setItem('asue:rolle', r);
+  },
+  checkPressure(previous, current){
+    previous = Number(previous);
+    current = Number(current);
+    if(previous && current > previous){
+      return confirm(
+        '⚠️ Achtung\n\n' +
+        'Der eingegebene Druck ('+current+' bar) ist höher als der vorherige Wert ('+previous+' bar).\n\n' +
+        'Bitte prüfen. Trotzdem übernehmen?'
+      );
+    }
+    return true;
+  }
+};
+</script>
+
 </body>
 </html>
