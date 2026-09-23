@@ -1522,6 +1522,27 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
         werte.push({name:'Trupp (niedrigster Druck)', druck});
       }
 
+      // ASUE v1.0.3 - reale Druckprüfung
+      const letzterDruck = lastDruckLine(t);
+      let vorher = null;
+      if(letzterDruck && letzterDruck.werte && letzterDruck.werte.length){
+        vorher = Math.min(...letzterDruck.werte.map(w => Number(w.druck)));
+      }
+
+      const neuer = Math.min(...werte.map(w => Number(w.druck)));
+
+      if(vorher !== null && neuer > vorher){
+        const weiter = confirm(
+          '⚠️ Ungewöhnlicher Druckwert\n\n' +
+          'Letzter Druck: ' + vorher + ' bar\n' +
+          'Neue Eingabe: ' + neuer + ' bar\n\n' +
+          'Der neue Wert ist höher als der vorherige Wert.\nBitte prüfen.\n\nTrotzdem übernehmen?'
+        );
+        if(!weiter){
+          return;
+        }
+      }
+
       t.druckwerte.push({zeit: Date.now(), werte, kontext: context});
       t.lastDruckCheck = Date.now();
       t.druckReminderActive = false;
