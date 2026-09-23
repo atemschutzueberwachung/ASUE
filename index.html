@@ -1004,7 +1004,7 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
 
     app.innerHTML = `
       <header class="top">
-        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.0.6</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
+        <div class="brand"><div><h1>Atemschutzüberwachung</h1><div class="creator-inline">Created by Henning Ludwig <span class="version-inline">• Version 1.0.7</span></div></div><span class="sub">Live</span><span class="cloud-badge">● Mehrgeräte-Cloud</span></div>
         <div style="display:flex; gap:8px;">
           <button class="btn small" id="btn-role">${esc(roleLabel())}</button><button class="btn small" id="btn-history">Gespeicherte Einsätze</button><button class="btn small" id="btn-einsatz-qr">QR-Code</button>
           <button class="btn small" id="btn-nachweis">Nachweis / Export</button>
@@ -1547,7 +1547,7 @@ function isReadOnlyRole(){ const r=getRole(); return r==='einsatzleiter' || r===
         werte.push({name:'Trupp (niedrigster Druck)', druck});
       }
 
-      // ASUE v1.0.6 - reale Druckprüfung
+      // ASUE v1.0.7 - reale Druckprüfung
       const letzterDruck = lastDruckLine(t);
       let vorher = null;
       if(letzterDruck && letzterDruck.werte && letzterDruck.werte.length){
@@ -2173,7 +2173,7 @@ const ASUE_V102_FEATURES = {
 
 <!-- ASUE_V103_FEATURES -->
 <script>
-const APP_VERSION = "1.0.6";
+const APP_VERSION = "1.0.7";
 
 const ASUE_V103 = {
   roleKey: "atemschutz:rolle",
@@ -2242,6 +2242,35 @@ function asue105LicenseBox(){
     Rolle: ${asue105Role()}
   </div>`;
 }
+</script>
+
+
+<!-- ASUE_V107_LICENSE_VISIBLE -->
+<style>
+.asue-v107-box{
+ margin-top:16px;
+ padding:14px;
+ border-radius:12px;
+ background:#202936;
+ color:#eee;
+}
+</style>
+<script>
+function showASUEv107License(){
+ const l = JSON.parse(localStorage.getItem("asue:lizenz") || "{}");
+ const box=document.createElement("div");
+ box.className="asue-v107-box";
+ box.id="ASUE_V107_LICENSE_VISIBLE";
+ box.innerHTML =
+ "🔐 Lizenz<br>" +
+ "Feuerwehr: " + (l.feuerwehr || "-") + "<br>" +
+ "Lizenz: " + (l.code || l.lizenz_code || "-") + "<br>" +
+ "Status: 🟢 Aktiv<br>" +
+ "Gültig bis: " + (l.gueltig_bis || "-") + "<br>" +
+ "Gerät: " + (l.geraete_name || "-");
+ document.body.appendChild(box);
+}
+window.addEventListener("load", showASUEv107License);
 </script>
 
 </body>
